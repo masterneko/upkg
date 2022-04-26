@@ -28,21 +28,29 @@
 #ifndef	_UPKG_H
 #define	_UPKG_H
 
+#include <stdint.h>
+
 /*
  * Action to be done.
  */
-typedef enum upkg_action {
-	UPKG_ACTION_NONE,	/* Nothing to do. */
-	UPKG_ACTION_DOWNGRADE,	/* Downgrade. */
-	UPKG_ACTION_INSTALL,	/* Install. */
-	UPKG_ACTION_UPGRADE,	/* Upgrade. */
-	UPKG_ACTION_REMOVE	/* Remove. */
+typedef enum upkg_action
+{
+	UPKG_ACTION_NONE,       /* Nothing to do. */
+	UPKG_ACTION_DOWNGRADE,  /* Downgrade. */
+	UPKG_ACTION_INSTALL,    /* Install. */
+	UPKG_ACTION_UPGRADE,    /* Upgrade. */
+	UPKG_ACTION_REMOVE      /* Remove. */
 } upkg_action_t;
 
-struct upkg_command {
+struct upkg_command
+{
 	const char *name;
 	const char *description;
 	int (*main)(int, char **);
 };
+
+/*
+ * Package management.
+ */
 
 #endif	/* _UPKG_H */

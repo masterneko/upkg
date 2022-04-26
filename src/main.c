@@ -27,39 +27,59 @@
 
 #include <sys/types.h>
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "config.h"
 
 #include "upkg.h"
 
-static void usage(void);
-static void version(void);
-
+const char* program_name = NULL;
 uint8_t	verbose_lvl = 0;
+
 static struct upkg_command command[] = {
 	{ "autoremove",	"Remove unneeded automatically installed pacages.",	NULL },
-	{ "install",	"Install new packages.",				NULL },
-	{ "keep",	"Mark packages as non-automatically installed.",	NULL },
-	{ "list",	"List installed packages.",				NULL },
-	{ "refresh",	"Refresh information about remote repositories.",	NULL },
-	{ "remove",	"Remove installed packages.",				NULL },
-	{ "unkeep",	"Mark packages as automatically installed.",		NULL },
-	{ "upgrade",	"Upgrade installed packages.",				NULL },
-	{ NULL,		NULL,							NULL }
+	{ "install",    "Install new packages.",                            NULL },
+	{ "keep",	    "Mark packages as non-automatically installed.",    NULL },
+	{ "list",       "List installed packages.",                         NULL },
+	{ "refresh",    "Refresh information about remote repositories.",	NULL },
+	{ "remove",	    "Remove installed packages.",                       NULL },
+	{ "unkeep",	    "Mark packages as automatically installed.",		NULL },
+	{ "upgrade",	"Upgrade installed packages.",                      NULL },
+	{ NULL,          NULL,                                              NULL }
 };
 
-int
-main(int argc, char **argv)
+static void version(void)
+{
+	printf("upkg version %s\n", VERSION);
+}
+
+static void usage(void)
+{
+	printf("Usage: %s command [options]\n", program_name);
+	printf("\nCommands:\n");
+
+	for(int i = 0; command[i].name != NULL; i++)
+	{
+		printf("    %-10s    - %s\n", command[i].name,
+		       command[i].description);
+	}
+}
+
+int main(int argc, char **argv)
 {
 	int ch;
-	int i;
 
-	while ((ch = getopt(argc, argv, "hVv")) != -1) {
-		switch (ch) {
+	program_name = argc > 0 ? argv[0] : "upkg";
+
+	while((ch = getopt(argc, argv, "hVv")) != -1)
+	{
+		switch (ch)
+		{
 		case 'h':
 			usage();
 			return (0);
@@ -74,32 +94,28 @@ main(int argc, char **argv)
 			return (2);
 		}
 	}
-	if ((argc - optind) < 1) {
+
+	if((argc - optind) < 1)
+	{
 		usage();
-		return (2);
+
+		return 2;
 	}
-	for (i = 0; command[i].name != NULL; i++) {
-		if (strcmp(argv[optind], command[i].name) == 0)
+
+	for(int i = 0; command[i].name != NULL; i++)
+	{
+		if(strcmp(argv[optind], command[i].name) == 0)
+		{
+			if(command[i].main == NULL)
+			{
+				fprintf(stderr, "internal error: unimplemented command '%s'\n", command[i].name);
+
+				return 1;
+			}
+
 			return (command[i].main(argc - optind, argv + optind));
+		}
 	}
-	return (0);
-}
 
-static void
-version(void)
-{
-	printf("upkg version %s\n", VERSION);
-}
-
-static void
-usage(void)
-{
-	int i;
-
-	printf("Usage: %s command [options]\n", getprogname());
-	printf("\nCommands:\n");
-	for (i = 0; command[i].name != NULL; i++) {
-		printf("\t%-20s\t-- %s\n", command[i].name,
-		       command[i].description);
-	}
+	return 0;
 }
